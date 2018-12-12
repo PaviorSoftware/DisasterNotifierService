@@ -7,6 +7,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DisasterNotifierServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DisasterNotifierServiceApplication.class, args);
+
+        SpringApplication springApplication = new SpringApplication(DisasterNotifierServiceApplication.class);
+
+        springApplication.run(args);
     }
+
 }
