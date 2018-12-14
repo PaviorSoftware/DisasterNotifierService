@@ -3,10 +3,13 @@ package gr.teicm.ieee.madc.disasternotifierservice.api.rpc.impl;
 import gr.teicm.ieee.madc.disasternotifierservice.api.rpc.AuthorizedUserController;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.UnauthorizedException;
 import gr.teicm.ieee.madc.disasternotifierservice.converter.ResponseModelToResponseEntity;
+import gr.teicm.ieee.madc.disasternotifierservice.domain.embeddable.Location;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.Disaster;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.User;
+import gr.teicm.ieee.madc.disasternotifierservice.dto.embeddable.LocationDTO;
 import gr.teicm.ieee.madc.disasternotifierservice.dto.entity.DisasterDTO;
 import gr.teicm.ieee.madc.disasternotifierservice.dto.entity.UserDTO;
+import gr.teicm.ieee.madc.disasternotifierservice.mapper.embeddable.LocationMapper;
 import gr.teicm.ieee.madc.disasternotifierservice.mapper.entity.DisasterMapper;
 import gr.teicm.ieee.madc.disasternotifierservice.mapper.entity.UserMapper;
 import gr.teicm.ieee.madc.disasternotifierservice.model.FirebaseModel;
@@ -30,13 +33,15 @@ public class AuthorizedUserControllerImpl implements AuthorizedUserController {
     private final AuthService authService;
     private final UserService userService;
     private final UserMapper userMapper;
+    private final LocationMapper locationMapper;
     private final DisasterService disasterService;
     private final DisasterMapper disasterMapper;
 
-    public AuthorizedUserControllerImpl(AuthService authService, UserService userService, UserMapper userMapper, DisasterService disasterService, DisasterMapper disasterMapper) {
+    public AuthorizedUserControllerImpl(AuthService authService, UserService userService, UserMapper userMapper, LocationMapper locationMapper, DisasterService disasterService, DisasterMapper disasterMapper) {
         this.authService = authService;
         this.userService = userService;
         this.userMapper = userMapper;
+        this.locationMapper = locationMapper;
         this.disasterService = disasterService;
         this.disasterMapper = disasterMapper;
     }
@@ -171,6 +176,108 @@ public class AuthorizedUserControllerImpl implements AuthorizedUserController {
 
         return ResponseModelToResponseEntity
                 .convert(userSingleResponseModel);
+    }
+
+    @Override
+    public ResponseEntity<?> getMyLocation(String authorization) {
+        SingleResponseModel<LocationDTO> locationSingleResponseModel;
+
+        try {
+            Location location = userService.getLocation(authorization);
+            locationSingleResponseModel = new SingleResponseModel<>(
+                    HttpStatus.OK,
+                    null,
+                    locationMapper.toDTO(location)
+            );
+        } catch (UnauthorizedException e) {
+            locationSingleResponseModel = new SingleResponseModel<>(
+                    HttpStatus.UNAUTHORIZED,
+                    e.getMessage(),
+                    null
+            );
+        } catch (NoSuchAlgorithmException e) {
+            locationSingleResponseModel = new SingleResponseModel<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    null
+            );
+        }
+
+        return ResponseModelToResponseEntity
+                .convert(locationSingleResponseModel);
+    }
+
+    @Override
+    public ResponseEntity<?> updateMyLocation(String authorization, LocationDTO location) {
+        SingleResponseModel<LocationDTO> locationSingleResponseModel;
+
+        try {
+            Location updatedLocation = userService.updateLocation(
+                    authorization,
+                    locationMapper.fromDTO(location)
+            );
+            locationSingleResponseModel = new SingleResponseModel<>(
+                    HttpStatus.OK,
+                    null,
+                    locationMapper.toDTO(updatedLocation)
+            );
+        } catch (UnauthorizedException e) {
+            locationSingleResponseModel = new SingleResponseModel<>(
+                    HttpStatus.UNAUTHORIZED,
+                    e.getMessage(),
+                    null
+            );
+        } catch (NoSuchAlgorithmException e) {
+            locationSingleResponseModel = new SingleResponseModel<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    null
+            );
+        }
+
+        return ResponseModelToResponseEntity
+                .convert(locationSingleResponseModel);
+    }
+
+    @Override
+    public ResponseEntity<?> getNearDisasters(String authorization, Long distance) {
+
+        ListResponseModel<Disaster> disasterListResponseModel;
+
+        try {
+            List<Disaster> near = disasterService.near(getUser(authorization), distance);
+
+            if (near.isEmpty()) {
+                disasterListResponseModel = new ListResponseModel<>(
+                        HttpStatus.NO_CONTENT,
+                        null,
+                        null
+                );
+            } else {
+                disasterListResponseModel = new ListResponseModel<>(
+                        HttpStatus.OK,
+                        null,
+                        near
+                );
+            }
+
+        } catch (UnauthorizedException e) {
+            disasterListResponseModel = new ListResponseModel<>(
+                    HttpStatus.UNAUTHORIZED,
+                    e.getMessage(),
+                    null
+            );
+        } catch (NoSuchAlgorithmException e) {
+            disasterListResponseModel = new ListResponseModel<>(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage(),
+                    null
+            );
+        }
+
+        return ResponseModelToResponseEntity
+                .convert(disasterListResponseModel);
+
     }
 
     private User getUser(String authorization) throws UnauthorizedException, NoSuchAlgorithmException {

@@ -2,6 +2,7 @@ package gr.teicm.ieee.madc.disasternotifierservice.service.rest;
 
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.EntityNotFoundException;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.UnauthorizedException;
+import gr.teicm.ieee.madc.disasternotifierservice.domain.embeddable.Location;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.Role;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.User;
 import gr.teicm.ieee.madc.disasternotifierservice.model.FirebaseModel;
@@ -24,4 +25,8 @@ public interface UserService extends GenericService<User, Long> {
     FirebaseModel updateFirebaseToken(String authorization, FirebaseModel firebaseModel) throws UnauthorizedException, NoSuchAlgorithmException;
 
     FirebaseModel getFirebaseToken(String authorization) throws UnauthorizedException, NoSuchAlgorithmException;
+
+    Location getLocation(String authorization) throws UnauthorizedException, NoSuchAlgorithmException;
+
+    Location updateLocation(String authorization, Location location) throws UnauthorizedException, NoSuchAlgorithmException;
 }

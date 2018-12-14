@@ -2,6 +2,7 @@ package gr.teicm.ieee.madc.disasternotifierservice.domain.entity;
 
 import gr.teicm.ieee.madc.disasternotifierservice.domain.embeddable.Location;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.enumerator.DisasterType;
+import io.micrometer.core.lang.NonNull;
 
 import javax.persistence.*;
 
@@ -26,6 +27,13 @@ public class Disaster extends BaseEntity {
     })
     private Location safeLocation;
 
+    private Boolean active;
+
+    @NonNull
+    private Long redRadius;
+    private Long yellowRadius;
+    private Long greenRadius;
+
     @ManyToOne(
             cascade = CascadeType.ALL,
             targetEntity = User.class,
@@ -38,10 +46,14 @@ public class Disaster extends BaseEntity {
     public Disaster() {
     }
 
-    public Disaster(DisasterType disasterType, Location disasterLocation, Location safeLocation, User creator) {
+    public Disaster(DisasterType disasterType, Location disasterLocation, Location safeLocation, Boolean active, Long redRadius, Long yellowRadius, Long greenRadius, User creator) {
         this.disasterType = disasterType;
         this.disasterLocation = disasterLocation;
         this.safeLocation = safeLocation;
+        this.active = active;
+        this.redRadius = redRadius;
+        this.yellowRadius = yellowRadius;
+        this.greenRadius = greenRadius;
         this.creator = creator;
     }
 
@@ -69,12 +81,48 @@ public class Disaster extends BaseEntity {
         this.safeLocation = safeLocation;
     }
 
+    public boolean isActive() {
+        return this.active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
     public User getCreator() {
         return creator;
     }
 
     public void setCreator(User creator) {
         this.creator = creator;
+    }
+
+    public Long getRedRadius() {
+        return redRadius;
+    }
+
+    public void setRedRadius(Long redRadius) {
+        this.redRadius = redRadius;
+    }
+
+    public Long getYellowRadius() {
+        return yellowRadius;
+    }
+
+    public void setYellowRadius(Long yellowRadius) {
+        this.yellowRadius = yellowRadius;
+    }
+
+    public Long getGreenRadius() {
+        return greenRadius;
+    }
+
+    public void setGreenRadius(Long greenRadius) {
+        this.greenRadius = greenRadius;
     }
 
     @Override

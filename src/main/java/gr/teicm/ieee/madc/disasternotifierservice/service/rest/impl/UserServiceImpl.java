@@ -5,6 +5,7 @@ import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.EntityNotFou
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.ForbiddenException;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.UnauthorizedException;
 import gr.teicm.ieee.madc.disasternotifierservice.config.ApplicationConfiguration;
+import gr.teicm.ieee.madc.disasternotifierservice.domain.embeddable.Location;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.Role;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.User;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.repository.UserRepository;
@@ -172,6 +173,25 @@ public class UserServiceImpl implements UserService {
         return getFirebaseTokenFrom(
                 authService.getUser(authorization)
         );
+    }
+
+    @Override
+    public Location getLocation(String authorization) throws UnauthorizedException, NoSuchAlgorithmException {
+
+        User user = authService.getUser(authorization);
+
+        return user.getLocation();
+    }
+
+    @Override
+    public Location updateLocation(String authorization, Location location) throws UnauthorizedException, NoSuchAlgorithmException {
+        User user = authService.getUser(authorization);
+
+        user.setLocation(location);
+
+        userRepository.save(user);
+
+        return user.getLocation();
     }
 
     private FirebaseModel getFirebaseTokenFrom(User user) {

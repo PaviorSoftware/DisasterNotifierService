@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface DisasterService extends GenericService<Disaster, Long> {
     List<Disaster> get(User user);
+
+    List<Disaster> near(User user, Long wantedDistance);
 }

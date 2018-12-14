@@ -10,6 +10,12 @@ public class DisasterDTO extends BaseEntityDTO {
 
     private LocationDTO safeLocation;
 
+    private boolean active;
+
+    private Long redRadius;
+    private Long yellowRadius;
+    private Long greenRadius;
+
     private UserDTO creator;
 
     public String getDisasterType() {
@@ -34,6 +40,38 @@ public class DisasterDTO extends BaseEntityDTO {
 
     public void setSafeLocation(LocationDTO safeLocation) {
         this.safeLocation = safeLocation;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public Long getRedRadius() {
+        return redRadius;
+    }
+
+    public void setRedRadius(Long redRadius) {
+        this.redRadius = redRadius;
+    }
+
+    public Long getYellowRadius() {
+        return yellowRadius;
+    }
+
+    public void setYellowRadius(Long yellowRadius) {
+        this.yellowRadius = yellowRadius;
+    }
+
+    public Long getGreenRadius() {
+        return greenRadius;
+    }
+
+    public void setGreenRadius(Long greenRadius) {
+        this.greenRadius = greenRadius;
     }
 
     public UserDTO getCreator() {
