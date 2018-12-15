@@ -85,6 +85,7 @@ public class DisasterServiceImpl implements DisasterService {
             Location safeLocation = new Location();
             safeLocation.setLatitude((float) 0);
             safeLocation.setLongitude((float) 0);
+            disaster.setSafeLocation(safeLocation);
         }
 
         calculateAndSetRadius(disaster);
