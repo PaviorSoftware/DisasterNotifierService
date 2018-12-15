@@ -3,6 +3,7 @@ package gr.teicm.ieee.madc.disasternotifierservice.service.rest.impl;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.EntityNotFoundException;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.ForbiddenException;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.UnauthorizedException;
+import gr.teicm.ieee.madc.disasternotifierservice.domain.embeddable.Location;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.Disaster;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.User;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.repository.DisasterRepository;
@@ -79,6 +80,12 @@ public class DisasterServiceImpl implements DisasterService {
     @Override
     public Disaster post(Disaster disaster, String authorization) throws UnauthorizedException, NoSuchAlgorithmException {
         User user = authService.getUser(authorization);
+
+        if (disaster.getSafeLocation() == null) {
+            Location safeLocation = new Location();
+            safeLocation.setLatitude((float) 0);
+            safeLocation.setLongitude((float) 0);
+        }
 
         calculateAndSetRadius(disaster);
 
