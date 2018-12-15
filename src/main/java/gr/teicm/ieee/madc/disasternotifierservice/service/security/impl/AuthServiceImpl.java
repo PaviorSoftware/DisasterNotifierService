@@ -99,9 +99,7 @@ public class AuthServiceImpl implements AuthService {
 
         Auth auth = optionalAuth.get();
 
-        if (dateService.isExpired(auth.getExpire())) {
-            throw new UnauthorizedException();
-        }
+        
 
 
         return auth.getUser();
