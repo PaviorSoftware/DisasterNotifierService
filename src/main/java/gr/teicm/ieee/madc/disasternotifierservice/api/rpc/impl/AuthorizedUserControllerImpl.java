@@ -54,6 +54,8 @@ public class AuthorizedUserControllerImpl implements AuthorizedUserController {
         try {
             User user = getUser(authorization);
 
+            cleanRecord(user);
+
             userSingleResponseModel = new SingleResponseModel<>(
                     HttpStatus.OK,
                     null,
@@ -91,6 +93,11 @@ public class AuthorizedUserControllerImpl implements AuthorizedUserController {
                         null
                 );
             } else {
+
+                for (Disaster disaster : mine) {
+                    cleanRecord(disaster);
+                }
+
                 disasterDTOListResponseModel = new ListResponseModel<>(
                         HttpStatus.OK,
                         null,
@@ -254,6 +261,11 @@ public class AuthorizedUserControllerImpl implements AuthorizedUserController {
                         null
                 );
             } else {
+
+                for (Disaster disaster : near) {
+                    cleanRecord(disaster);
+                }
+
                 disasterListResponseModel = new ListResponseModel<>(
                         HttpStatus.OK,
                         null,
@@ -278,6 +290,20 @@ public class AuthorizedUserControllerImpl implements AuthorizedUserController {
         return ResponseModelToResponseEntity
                 .convert(disasterListResponseModel);
 
+    }
+
+    private void cleanRecord(User user) {
+        Location location = new Location();
+        location.setLatitude((float) 0.0);
+        location.setLongitude((float) 0.0);
+
+        user.setLocation(location);
+        user.setPassword("");
+        user.setFirebaseToken("");
+    }
+
+    private void cleanRecord(Disaster disaster) {
+        cleanRecord(disaster.getCreator());
     }
 
     private User getUser(String authorization) throws UnauthorizedException, NoSuchAlgorithmException {

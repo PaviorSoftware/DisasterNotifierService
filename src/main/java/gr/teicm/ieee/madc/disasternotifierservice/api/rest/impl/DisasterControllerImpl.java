@@ -6,7 +6,9 @@ import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.EntityNotFou
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.ForbiddenException;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.UnauthorizedException;
 import gr.teicm.ieee.madc.disasternotifierservice.converter.ResponseModelToResponseEntity;
+import gr.teicm.ieee.madc.disasternotifierservice.domain.embeddable.Location;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.Disaster;
+import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.User;
 import gr.teicm.ieee.madc.disasternotifierservice.dto.entity.DisasterDTO;
 import gr.teicm.ieee.madc.disasternotifierservice.mapper.entity.DisasterMapper;
 import gr.teicm.ieee.madc.disasternotifierservice.model.ListResponseModel;
@@ -46,6 +48,11 @@ public class DisasterControllerImpl implements DisasterController {
                     null
             );
         } else {
+
+            for (Disaster disaster : disasters) {
+                cleanRecord(disaster);
+            }
+
             disasterListResponseModel = new ListResponseModel<>(
                     HttpStatus.OK,
                     null,
@@ -65,6 +72,9 @@ public class DisasterControllerImpl implements DisasterController {
 
         try {
             Disaster disaster = disasterService.get(id, authorization);
+
+            cleanRecord(disaster);
+
             disasterSingleResponseModel = new SingleResponseModel<>(
                     HttpStatus.OK,
                     null,
@@ -92,6 +102,9 @@ public class DisasterControllerImpl implements DisasterController {
                     disasterMapper.fromDTO(entity),
                     authorization
             );
+
+            cleanRecord(post);
+
             disasterSingleResponseModel = new SingleResponseModel<>(
                     HttpStatus.CREATED,
                     null,
@@ -137,6 +150,9 @@ public class DisasterControllerImpl implements DisasterController {
                     disasterMapper.fromDTO(entity),
                     authorization
             );
+
+            cleanRecord(put);
+
             disasterSingleResponseModel = new SingleResponseModel<>(
                     HttpStatus.OK,
                     null,
@@ -220,5 +236,18 @@ public class DisasterControllerImpl implements DisasterController {
 
         return ResponseModelToResponseEntity
                 .convert(disasterSingleResponseModel);
+    }
+
+    private void cleanRecord(Disaster disaster) {
+        User creator = disaster.getCreator();
+
+        Location location = new Location();
+        location.setLatitude((float) 0.0);
+        location.setLongitude((float) 0.0);
+
+        creator.setLocation(location);
+
+        creator.setFirebaseToken("");
+        creator.setPassword("");
     }
 }

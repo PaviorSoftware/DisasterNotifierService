@@ -6,6 +6,7 @@ import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.EntityNotFou
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.ForbiddenException;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.UnauthorizedException;
 import gr.teicm.ieee.madc.disasternotifierservice.converter.ResponseModelToResponseEntity;
+import gr.teicm.ieee.madc.disasternotifierservice.domain.embeddable.Location;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.User;
 import gr.teicm.ieee.madc.disasternotifierservice.dto.entity.UserDTO;
 import gr.teicm.ieee.madc.disasternotifierservice.mapper.entity.UserMapper;
@@ -47,6 +48,11 @@ public class UserControllerImpl implements UserController {
                     null
             );
         } else {
+
+            for (User user : users) {
+                cleanRecord(user);
+            }
+
             usersListResponseEntity = new ListResponseModel<>(
                     HttpStatus.OK,
                     null,
@@ -66,6 +72,8 @@ public class UserControllerImpl implements UserController {
 
         try {
             User user = userService.get(id, authorization);
+
+            cleanRecord(user);
 
             userSingleResponseModel = new SingleResponseModel<>(
                     HttpStatus.OK,
@@ -93,6 +101,9 @@ public class UserControllerImpl implements UserController {
 
         try {
             User user = userService.post(userEntity, "");
+
+            cleanRecord(user);
+
             userSingleResponseModel = new SingleResponseModel<>(
                     HttpStatus.CREATED,
                     null,
@@ -138,6 +149,9 @@ public class UserControllerImpl implements UserController {
 
         try {
             User user = userService.put(id, userEntity, "");
+
+            cleanRecord(user);
+
             userSingleResponseModel = new SingleResponseModel<>(
                     HttpStatus.OK,
                     null,
@@ -220,6 +234,16 @@ public class UserControllerImpl implements UserController {
         return ResponseModelToResponseEntity.convert(
                 userSingleResponseModel
         );
+    }
+
+    private void cleanRecord(User user) {
+        Location location = new Location();
+        location.setLatitude((float) 0.0);
+        location.setLongitude((float) 0.0);
+
+        user.setLocation(location);
+        user.setPassword("");
+        user.setFirebaseToken("");
     }
 
 }
