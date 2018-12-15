@@ -14,6 +14,8 @@ import gr.teicm.ieee.madc.disasternotifierservice.mapper.entity.DisasterMapper;
 import gr.teicm.ieee.madc.disasternotifierservice.model.ListResponseModel;
 import gr.teicm.ieee.madc.disasternotifierservice.model.SingleResponseModel;
 import gr.teicm.ieee.madc.disasternotifierservice.service.rest.DisasterService;
+import gr.teicm.ieee.madc.disasternotifierservice.service.rest.UserService;
+import org.json.JSONException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,10 +31,12 @@ public class DisasterControllerImpl implements DisasterController {
 
     private final DisasterService disasterService;
     private final DisasterMapper disasterMapper;
+    private final UserService userService;
 
-    public DisasterControllerImpl(DisasterService disasterService, DisasterMapper disasterMapper) {
+    public DisasterControllerImpl(DisasterService disasterService, DisasterMapper disasterMapper, UserService userService) {
         this.disasterService = disasterService;
         this.disasterMapper = disasterMapper;
+        this.userService = userService;
     }
 
     @Override
@@ -103,6 +107,8 @@ public class DisasterControllerImpl implements DisasterController {
                     authorization
             );
 
+            userService.notify(post);
+
             cleanRecord(post);
 
             disasterSingleResponseModel = new SingleResponseModel<>(
@@ -128,7 +134,7 @@ public class DisasterControllerImpl implements DisasterController {
                     e.getMessage(),
                     null
             );
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException | JSONException e) {
             disasterSingleResponseModel = new SingleResponseModel<>(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     e.getMessage(),

@@ -3,10 +3,12 @@ package gr.teicm.ieee.madc.disasternotifierservice.service.rest;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.EntityNotFoundException;
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.UnauthorizedException;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.embeddable.Location;
+import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.Disaster;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.Role;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.User;
 import gr.teicm.ieee.madc.disasternotifierservice.model.FirebaseModel;
 import gr.teicm.ieee.madc.disasternotifierservice.model.RegisterModel;
+import org.json.JSONException;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -29,4 +31,6 @@ public interface UserService extends GenericService<User, Long> {
     Location getLocation(String authorization) throws UnauthorizedException, NoSuchAlgorithmException;
 
     Location updateLocation(String authorization, Location location) throws UnauthorizedException, NoSuchAlgorithmException;
+
+    void notify(Disaster disaster) throws JSONException;
 }

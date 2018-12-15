@@ -6,18 +6,24 @@ import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.ForbiddenExc
 import gr.teicm.ieee.madc.disasternotifierservice.commons.exception.UnauthorizedException;
 import gr.teicm.ieee.madc.disasternotifierservice.config.ApplicationConfiguration;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.embeddable.Location;
+import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.Disaster;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.Role;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.entity.User;
 import gr.teicm.ieee.madc.disasternotifierservice.domain.repository.UserRepository;
 import gr.teicm.ieee.madc.disasternotifierservice.model.FirebaseModel;
 import gr.teicm.ieee.madc.disasternotifierservice.model.RegisterModel;
+import gr.teicm.ieee.madc.disasternotifierservice.service.commons.DistanceService;
+import gr.teicm.ieee.madc.disasternotifierservice.service.commons.FCMService;
 import gr.teicm.ieee.madc.disasternotifierservice.service.rest.RoleService;
 import gr.teicm.ieee.madc.disasternotifierservice.service.rest.UserService;
 import gr.teicm.ieee.madc.disasternotifierservice.service.security.AuthService;
 import gr.teicm.ieee.madc.disasternotifierservice.service.security.HashingService;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -29,12 +35,16 @@ public class UserServiceImpl implements UserService {
     private final HashingService hashingService;
     private final RoleService roleService;
     private final AuthService authService;
+    private final FCMService fcmService;
+    private final DistanceService distanceService;
 
-    public UserServiceImpl(UserRepository userRepository, HashingService hashingService, RoleService roleService, AuthService authService) {
+    public UserServiceImpl(UserRepository userRepository, HashingService hashingService, RoleService roleService, AuthService authService, FCMService fcmService, DistanceService distanceService) {
         this.userRepository = userRepository;
         this.hashingService = hashingService;
         this.roleService = roleService;
         this.authService = authService;
+        this.fcmService = fcmService;
+        this.distanceService = distanceService;
     }
 
 
@@ -192,6 +202,76 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return user.getLocation();
+    }
+
+    @Override
+    public void notify(Disaster disaster) throws JSONException {
+        List<User> users = userRepository.findAll();
+
+        List<String> redUsersTokens = new ArrayList<>();
+        List<String> orangeUsersTokens = new ArrayList<>();
+        List<String> greenUsersTokens = new ArrayList<>();
+
+        for (User user : users) {
+
+            if (user.getFirebaseToken().equals("")) {
+                continue;
+            }
+
+            double distance = distanceService.get(user.getLocation(), disaster.getDisasterLocation());
+
+            if (distance <= disaster.getRedRadius()) {
+                redUsersTokens.add(user.getFirebaseToken());
+            } else if (distance <= disaster.getYellowRadius()) {
+                orangeUsersTokens.add(user.getFirebaseToken());
+            } else if (distance <= disaster.getGreenRadius()) {
+                greenUsersTokens.add(user.getFirebaseToken());
+            }
+
+        }
+
+
+        fcmService
+                .sentToMultiple(
+                        generateFCMBody(
+                                "type_a",
+                                "We received a disaster report near you and you are in the RED zone.",
+                                "Emergency" + " - " + disaster.getDisasterType() + " - " + "RED"
+                        ), redUsersTokens
+                );
+
+        fcmService
+                .sentToMultiple(
+                        generateFCMBody(
+                                "type_a",
+                                "We received a disaster report near you and you are in the ORANGE zone.",
+                                "Warning" + " - " + disaster.getDisasterType() + " - " + "ORANGE"
+                        ), orangeUsersTokens
+                );
+
+        fcmService
+                .sentToMultiple(
+                        generateFCMBody(
+                                "type_a",
+                                "We received a disaster report near you and you are in the GREEN zone.",
+                                "Notice" + " - " + disaster.getDisasterType() + " - " + "GREEN"
+                        ), greenUsersTokens
+                );
+
+
+    }
+
+    private JSONObject generateFCMBody(String type, String body, String title) throws JSONException {
+        JSONObject jsonBody = new JSONObject();
+        JSONObject jsonData = new JSONObject();
+
+        jsonBody.put("collapse_key", type);
+        jsonData.put("body", body);
+        jsonData.put("title", title);
+
+        jsonBody.put("notification", jsonData);
+
+        return jsonBody;
     }
 
     private FirebaseModel getFirebaseTokenFrom(User user) {
